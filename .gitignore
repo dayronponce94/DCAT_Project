@@ -1,0 +1,24 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# IDEs y Editores
+.vscode/
+.idea/
+
+# Bases de datos y archivos grandes (protege tus archivos locales)
+*.sqlite
+*.db
+*.pkl
+
+# Sistema Operativo
+Thumbs.db
+.DS_Store
