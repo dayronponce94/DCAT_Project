@@ -57,20 +57,30 @@ def get_shap_explanation(patient_data: dict):
 
     # 6. Mapear los nombres de las variables con sus respectivos impactos
     explicacion_detallada = []
+
+    # Extraemos la fila de datos transformados como una serie de pandas para saber qué columnas valen 1
+    fila_transformada = df_transformed.iloc[0]
+
     for col, val in zip(feature_names, shap_local):
         if val != 0:
-            explicacion_detallada.append(
-                {
-                    "caracteristica_binaria": col,
-                    "impacto_shap": float(val),
-                    # Ahora la lógica es directa: positivo incrementa riesgo, negativo lo disminuye
-                    "direccion": (
-                        "Incrementa Riesgo Desamparo"
-                        if val > 0
-                        else "Disminuye Riesgo Desamparo"
-                    ),
-                }
-            )
+            # CONDICIÓN DOCTORAL CLAVE: Solo nos interesan las variables que la paciente SÍ TIENE activas (igual a 1)
+            # O la variable de la EDAD (que empieza con 'remainder__') porque es cuantitativa continua.
+            if fila_transformada[col] == 1.0 or col.startswith("remainder__"):
+
+                # Embellecemos el nombre para quitar los prefijos del pipeline ('cat__' o 'remainder__')
+                nombre_limpio = col.replace("cat__", "").replace("remainder__", "")
+
+                explicacion_detallada.append(
+                    {
+                        "caracteristica_binaria": nombre_limpio,
+                        "impacto_shap": float(val),
+                        "direccion": (
+                            "Incrementa Riesgo Desamparo"
+                            if val > 0
+                            else "Disminuye Riesgo Desamparo"
+                        ),
+                    }
+                )
 
     # Ordenar los impactos de mayor a menor relevancia absoluta
     explicacion_detallada = sorted(
