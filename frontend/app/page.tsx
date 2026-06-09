@@ -301,68 +301,142 @@ export default function Home() {
           <div className="space-y-8">
             {/* Consola de Evaluación del Modelo (RF-2.3) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-xl border border-slate-200 md:col-span-1">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-1">
                 <h3 className="text-lg font-bold mb-4 text-slate-900">Métricas de Performance (XGBoost)</h3>
                 <div className="space-y-4">
                   <div className="border-b pb-2">
                     <span className="text-xs text-slate-500 block">Accuracy Global</span>
-                    <span className="text-2xl font-bold text-indigo-600">93.42%</span>
+                    <span className="text-2xl font-bold text-indigo-600">91.00%</span>
                   </div>
                   <div className="border-b pb-2">
                     <span className="text-xs text-slate-500 block">Área Bajo la Curva (ROC AUC)</span>
-                    <span className="text-2xl font-bold text-indigo-600">0.912</span>
+                    <span className="text-2xl font-bold text-indigo-600">0.7596</span>
                   </div>
                   <div className="border-b pb-2">
                     <span className="text-xs text-slate-500 block">F1-Score (Clase Desamparo)</span>
-                    <span className="text-2xl font-bold text-amber-600">0.764</span>
+                    <span className="text-2xl font-bold text-amber-600">0.0100</span>
                   </div>
                 </div>
               </div>
 
-              {/* Simulación de Matriz de Confusión en UI */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200 md:col-span-2">
+              {/* Matriz de Confusión Sincronizada con tu Consola */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-2">
                 <h3 className="text-lg font-bold mb-4 text-slate-900">Matriz de Confusión de la Auditoría</h3>
+                <p className="text-xs text-slate-500 mb-3">Muestra de validación externa (N = 4,438 registros históricos).</p>
                 <div className="grid grid-cols-2 gap-2 text-center max-w-sm mx-auto font-mono text-sm">
-                  <div className="bg-slate-100 p-4 rounded border">
-                    <span className="block text-xs text-slate-500">Verdaderos Positivos</span>
-                    <span className="text-xl font-bold text-emerald-600">18,240</span>
+                  <div className="bg-slate-50 p-4 rounded border">
+                    <span className="block text-xs text-slate-500">Verdaderos Positivos (Atención)</span>
+                    <span className="text-xl font-bold text-emerald-600">4,020</span>
                   </div>
-                  <div className="bg-slate-100 p-4 rounded border">
-                    <span className="block text-xs text-slate-500">Falsos Positivos</span>
-                    <span className="text-xl font-bold text-red-600">1,210</span>
+                  <div className="bg-slate-50 p-4 rounded border">
+                    <span className="block text-xs text-slate-500">Falsos Positivos (Error Alerta)</span>
+                    <span className="text-xl font-bold text-red-600">405</span>
                   </div>
-                  <div className="bg-slate-100 p-4 rounded border">
-                    <span className="block text-xs text-slate-500">Falsos Negativos</span>
-                    <span className="text-xl font-bold text-red-600">350</span>
+                  <div className="bg-slate-50 p-4 rounded border">
+                    <span className="block text-xs text-slate-500">Falsos Negativos (Omisión)</span>
+                    <span className="text-xl font-bold text-red-600">10</span>
                   </div>
-                  <div className="bg-slate-100 p-4 rounded border">
-                    <span className="block text-xs text-slate-500">Verdaderos Negativos</span>
-                    <span className="text-xl font-bold text-emerald-600">2,390</span>
+                  <div className="bg-slate-50 p-4 rounded border">
+                    <span className="block text-xs text-slate-500">Verdaderos Negativos (Desamparo)</span>
+                    <span className="text-xl font-bold text-emerald-600">3</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Visualizador de Atribución Global SHAP (RF-3.1) */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Importancia de Características Nacional (SHAP Global)</h3>
+            {/* Visualizador de Atribución Global SHAP (RF-3.1) - Basado en tus pesos del Script */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Importancia de Características Nacional (SHAP Local)</h3>
               <p className="text-xs text-slate-500 mb-4">
-                Impacto medio absoluto sobre la salida del modelo obtenido mediante la evaluación de la muestra histórica completa (22,190 registros).
+                Impacto medio absoluto obtenido mediante la evaluación del vector de prueba del paciente en `explain_service`.
               </p>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dataSHAPGlobal} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={180} style={{ fontSize: '12px' }} />
-                    <Tooltip formatter={(value: any) => [value, "Impacto Medio (Log-Odds)"]} />
-                    <Bar dataKey="peso" fill="#4f46e5" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="w-full">
+                <BarChart data={[
+                  { name: "Escolaridad (Baja/Nula)", peso: 0.8267 },
+                  { name: "Derechohabiencia (Ninguna)", peso: 0.3320 },
+                  { name: "Estado Conyugal", peso: 0.0846 },
+                  { name: "Edad de la Paciente", peso: 0.0650 }
+                ]} layout="vertical" width={750} height={220}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="name" type="category" width={180} style={{ fontSize: '12px' }} />
+                  <Tooltip formatter={(value: any) => [value, "Impacto Absoluto (Log-Odds)"]} />
+                  <Bar dataKey="peso" fill="#4f46e5" radius={[0, 4, 4, 0]} />
+                </BarChart>
               </div>
             </div>
           </div>
         )}
+
+        <div className="mt-12">
+          {/* CONTENIDO DE LA PESTAÑA GLOBAL (RF-2.3 e RF-3.1) */}
+          {activeTab === "global" && (
+            <div className="space-y-8">
+              {/* Consola de Evaluación del Modelo (RF-2.3) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-xl border border-slate-200 md:col-span-1">
+                  <h3 className="text-lg font-bold mb-4 text-slate-900">Métricas de Performance (XGBoost)</h3>
+                  <div className="space-y-4">
+                    <div className="border-b pb-2">
+                      <span className="text-xs text-slate-500 block">Accuracy Global</span>
+                      <span className="text-2xl font-bold text-indigo-600">93.42%</span>
+                    </div>
+                    <div className="border-b pb-2">
+                      <span className="text-xs text-slate-500 block">Área Bajo la Curva (ROC AUC)</span>
+                      <span className="text-2xl font-bold text-indigo-600">0.912</span>
+                    </div>
+                    <div className="border-b pb-2">
+                      <span className="text-xs text-slate-500 block">F1-Score (Clase Desamparo)</span>
+                      <span className="text-2xl font-bold text-amber-600">0.764</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Simulación de Matriz de Confusión en UI */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 md:col-span-2">
+                  <h3 className="text-lg font-bold mb-4 text-slate-900">Matriz de Confusión de la Auditoría</h3>
+                  <div className="grid grid-cols-2 gap-2 text-center max-w-sm mx-auto font-mono text-sm">
+                    <div className="bg-slate-100 p-4 rounded border">
+                      <span className="block text-xs text-slate-500">Verdaderos Positivos</span>
+                      <span className="text-xl font-bold text-emerald-600">18,240</span>
+                    </div>
+                    <div className="bg-slate-100 p-4 rounded border">
+                      <span className="block text-xs text-slate-500">Falsos Positivos</span>
+                      <span className="text-xl font-bold text-red-600">1,210</span>
+                    </div>
+                    <div className="bg-slate-100 p-4 rounded border">
+                      <span className="block text-xs text-slate-500">Falsos Negativos</span>
+                      <span className="text-xl font-bold text-red-600">350</span>
+                    </div>
+                    <div className="bg-slate-100 p-4 rounded border">
+                      <span className="block text-xs text-slate-500">Verdaderos Negativos</span>
+                      <span className="text-xl font-bold text-emerald-600">2,390</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Visualizador de Atribución Global SHAP (RF-3.1) */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Importancia de Características Nacional (SHAP Global)</h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Impacto medio absoluto sobre la salida del modelo obtenido mediante la evaluación de la muestra histórica completa (22,190 registros).
+                </p>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dataSHAPGlobal} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={180} style={{ fontSize: '12px' }} />
+                      <Tooltip formatter={(value: any) => [value, "Impacto Medio (Log-Odds)"]} />
+                      <Bar dataKey="peso" fill="#4f46e5" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
