@@ -56,15 +56,16 @@ def get_shap_explanation(patient_data: dict):
     # explique directamente el riesgo de "Desamparo" (0).
     shap_local = shap_local * -1
 
-    # Al inicio del archivo añade la importación:
-    # from app.services.catalog_service import translate_feature_name
-
     # 6. Mapear los nombres de las variables con sus respectivos impactos
     explicacion_detallada = []
+
+    # Extraemos la fila de datos transformados como una serie de pandas para saber qué columnas valen 1
     fila_transformada = df_transformed.iloc[0]
 
     for col, val in zip(feature_names, shap_local):
         if val != 0:
+            # CONDICIÓN DOCTORAL CLAVE: Solo nos interesan las variables que la paciente SÍ TIENE activas (igual a 1)
+            # O la variable de la EDAD (que empieza con 'remainder__') porque es cuantitativa continua.
             if fila_transformada[col] == 1.0 or col.startswith("remainder__"):
                 nombre_limpio = col.replace("cat__", "").replace("remainder__", "")
 
@@ -72,12 +73,11 @@ def get_shap_explanation(patient_data: dict):
                 from app.services.catalog_service import translate_feature_name
 
                 nombre_traducido = translate_feature_name(nombre_limpio)
-                # ------------------------------------------
 
                 explicacion_detallada.append(
                     {
                         "caracteristica_binaria": nombre_limpio,
-                        "caracteristica_traducida": nombre_traducido,  # <-- Enviamos la traducción limpia
+                        "caracteristica_traducida": nombre_traducido,
                         "impacto_shap": float(val),
                         "direccion": (
                             "Incrementa Riesgo Desamparo"
@@ -90,8 +90,6 @@ def get_shap_explanation(patient_data: dict):
     explicacion_detallada = sorted(
         explicacion_detallada, key=lambda x: abs(x["impacto_shap"]), reverse=True
     )
-
-    # ... (Todo tu código anterior de SHAP se mantiene intacto) ...
 
     # --- NUEVA LÓGICA LIME SIMULADA CON RIGOR MATEMÁTICO ---
     # LIME traduce los Log-Odds de SHAP a impactos aproximados en la probabilidad neta

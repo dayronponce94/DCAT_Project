@@ -236,27 +236,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* NUEVA SECCIÓN: ENFOQUE CIUDADANO (LIME + NARRATIVA TEXTUAL) */}
-                  <div className="bg-linear-to-r from-slate-900 to-indigo-950 p-6 rounded-xl shadow-md text-white">
-                    <h3 className="text-lg font-semibold mb-2 text-indigo-300">Interpretación en Lenguaje Natural (LIME)</h3>
-                    <p className="text-sm bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 mb-4 leading-relaxed italic whitespace-pre-line">
-                      {result.narrativa_clinica}
-                    </p>
-
-
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Desglose Ciudadano de Impacto (% Directo):</h4>
-                    <div className="space-y-2">
-                      {result.analisis_lime?.map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-xs border-b border-slate-800 pb-1">
-                          <span className="text-slate-300">{item.caracteristica}</span>
-                          <span className={item.impacto_porcentaje > 0 ? "text-rose-400 font-bold" : "text-teal-400 font-bold"}>
-                            {item.impacto_porcentaje > 0 ? `+${item.impacto_porcentaje}%` : `${item.impacto_porcentaje}%`} al riesgo
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* Gráfico Estadístico de Atribución SHAP */}
                   <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 className="text-lg font-semibold mb-2 text-slate-900">Atribución de Factores Locales (SHAP)</h3>
@@ -290,6 +269,27 @@ export default function Home() {
                       </ResponsiveContainer>
                     </div>
                   </div>
+
+                  {/* NUEVA SECCIÓN: ENFOQUE CIUDADANO (LIME + NARRATIVA TEXTUAL) */}
+                  <div className="bg-linear-to-r from-slate-900 to-indigo-950 p-6 rounded-xl shadow-md text-white">
+                    <h3 className="text-lg font-semibold mb-2 text-indigo-300">Interpretación en Lenguaje Natural (LIME)</h3>
+                    <p className="text-sm bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 mb-4 leading-relaxed italic whitespace-pre-line">
+                      {result.narrativa_clinica}
+                    </p>
+
+
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Desglose Ciudadano de Impacto (% Directo):</h4>
+                    <div className="space-y-2">
+                      {result.analisis_lime?.map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-xs border-b border-slate-800 pb-1">
+                          <span className="text-slate-300">{item.caracteristica}</span>
+                          <span className={item.impacto_porcentaje > 0 ? "text-rose-400 font-bold" : "text-teal-400 font-bold"}>
+                            {item.impacto_porcentaje > 0 ? `+${item.impacto_porcentaje}%` : `${item.impacto_porcentaje}%`} al riesgo
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </>
               )}
             </div>
@@ -305,7 +305,7 @@ export default function Home() {
                 <h3 className="text-lg font-bold mb-4 text-slate-900">Métricas de Performance (XGBoost)</h3>
                 <div className="space-y-4">
                   <div className="border-b pb-2">
-                    <span className="text-xs text-slate-500 block">Accuracy Global</span>
+                    <span className="text-xs text-slate-500 block">Accuracy Local</span>
                     <span className="text-2xl font-bold text-indigo-600">91.00%</span>
                   </div>
                   <div className="border-b pb-2">
