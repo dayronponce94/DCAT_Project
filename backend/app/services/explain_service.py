@@ -70,8 +70,6 @@ def get_shap_explanation(patient_data: dict):
                 nombre_limpio = col.replace("cat__", "").replace("remainder__", "")
 
                 # --- NUEVA LÓGICA DE TRADUCCIÓN DOCTORAL ---
-                from app.services.catalog_service import translate_feature_name
-
                 nombre_traducido = translate_feature_name(nombre_limpio)
 
                 explicacion_detallada.append(
