@@ -5,18 +5,18 @@ import Link from "next/link";
 export default function MainDashboard() {
   const modules = [
     {
-      id: "observatorio",
+      id: "observatory",
       title: "Módulo 1: Observatorio Geo-Socioeconómico",
       description:
         "Visualización macro de la Tasa de Mortalidad Materna a nivel nacional mediante mapa coroplético interactivo y filtros BI dinámicos.",
-      status: "En Construcción",
+      status: "En Construcción 50%",
       statusColor: "bg-amber-100 text-amber-800 border-amber-300",
       icon: (
         <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
         </svg>
       ),
-      href: "/observatorio",
+      href: "/observatory",
       badge: "BI & Mapas",
     },
     {
@@ -51,7 +51,7 @@ export default function MainDashboard() {
       badge: "Validación IA",
     },
     {
-      id: "reportes",
+      id: "reports",
       title: "Módulo 4: Generador de Reportes Científicos",
       description:
         "Exportador oficial de fichas de auditoría médica y recomendaciones de política pública de precisión en formato PDF.",
@@ -62,7 +62,7 @@ export default function MainDashboard() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      href: "/reportes",
+      href: "/reports",
       badge: "Exportador PDF",
     },
   ];
@@ -98,7 +98,7 @@ export default function MainDashboard() {
             </div>
           </div>
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 font-bold text-xl">0.912</div>
+            <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 font-bold text-xl">0.7596</div>
             <div>
               <p className="text-xs text-slate-500 font-medium">Rendimiento ROC-AUC</p>
               <p className="text-sm font-bold text-slate-900">Modelo XGBoost Calibrado</p>

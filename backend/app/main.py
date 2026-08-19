@@ -1,18 +1,19 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from app.schemas.patient import PatientInput
 from app.services.explain_service import get_shap_explanation
+from app.services.bi_service import calculate_real_socioeconomic_metrics
 
 app = FastAPI(
-    title="DCAT_Project - API de Inferencia Explicable (XAI)",
-    description="Backend doctoral para la predicción y auditoría local del riesgo de desamparo en mortalidad materna.",
+    title="DCAT_Project - API de Inferencia Explicable (XAI) y BI",
+    description="Backend doctoral para la predicción, auditoría local del riesgo y analítica socioeconómica.",
     version="1.0.0",
 )
 
-# Configuración de CORS: Permite que tu frontend en Next.js (normalmente en el puerto 3000) se comunique con FastAPI
+# Configuración de CORS para permitir la conexión con el frontend en Next.js
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción cambiar por la URL específica de Next.js
+    allow_origins=["*"],  # En producción cambiar por la URL específica
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,7 +22,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"status": "Online", "proyecto": "DCAT_Project XAI Backend"}
+    return {"status": "Online", "proyecto": "DCAT_Project XAI & BI Backend"}
 
 
 @app.post(
@@ -30,12 +31,8 @@ def read_root():
 )
 def predict_and_explain(patient: PatientInput):
     try:
-        # Convertimos el objeto Pydantic a un diccionario clásico de Python
         patient_dict = patient.model_dump()
-
-        # Invocamos el motor analítico de SHAP que calibramos previamente
         result = get_shap_explanation(patient_dict)
-
         return {"success": True, "data": result}
     except FileNotFoundError as fnf:
         raise HTTPException(
@@ -45,4 +42,24 @@ def predict_and_explain(patient: PatientInput):
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Fallo en el procesamiento del motor XAI: {str(e)}"
+        )
+
+
+@app.get(
+    "/api/v1/socioeconomic-metrics",
+    summary="Obtiene indicadores macro reales y agregaciones socioeconómicas poblacionales",
+)
+def get_socioeconomic_metrics(
+    entidad: int = Query(
+        0, description="Filtrar por Entidad de Ocurrencia (0 para todas)"
+    )
+):
+    try:
+        # Llamada directa al procesamiento en tiempo real sobre el DataFrame
+        metrics = calculate_real_socioeconomic_metrics(entidad=entidad)
+        return {"success": True, "data": metrics}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al calcular métricas analíticas reales: {str(e)}",
         )
