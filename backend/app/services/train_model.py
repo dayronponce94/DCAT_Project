@@ -8,7 +8,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
 from xgboost import XGBClassifier
-
+from sklearn.metrics import precision_recall_curve, f1_score
 from app.services.data_preparation import load_and_clean_data
 
 
@@ -20,9 +20,12 @@ def train_and_save_model():
     X = df.drop(columns=["TARGET"])
     y = df["TARGET"]
 
-    # 2. División estratificada (80% Train, 20% Test)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=42, stratify=y
+    # 2. División en TRES partes: 60% train / 20% validation / 20% test
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, test_size=0.40, random_state=42, stratify=y
+    )
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
 
     # 3. Definir variables categóricas (IDs nominales) a procesar
@@ -68,22 +71,38 @@ def train_and_save_model():
     print("\n[PROCESO] Entrenando Pipeline (OneHotEncoder + XGBoost)...")
     pipeline.fit(X_train, y_train)
 
-    # 8. Evaluación de Métricas Científicas (Optimizando el Umbral de Decisión)
-    y_prob = pipeline.predict_proba(X_test)[:, 1]
+    # --- Búsqueda del umbral óptimo sobre VALIDACIÓN (no sobre test) ---
+    y_val_prob = pipeline.predict_proba(X_val)[:, 1]
 
-    # AJUSTE DOCTORAL: En lugar de usar el umbral rígido de 0.50,
-    # usamos un umbral basado en la distribución real de nuestros datos (0.88)
-    # Si la probabilidad de tener atención es menor al 88%, clasificamos como SIN ATENCIÓN (0)
-    umbral_personalizado = 0.88
-    y_pred = np.where(y_prob >= umbral_personalizado, 1, 0)
+    precisions, recalls, thresholds = precision_recall_curve(
+        y_val, y_val_prob, pos_label=1
+    )
+    # precision_recall_curve calcula P y R para la clase positiva (1);
+    # como te interesa la clase 0 (Desamparo), es más directo barrer
+    # manualmente y evaluar F1 de la clase 0 en cada punto:
+
+    mejor_umbral, mejor_f1_clase0 = 0.5, 0.0
+    for t in np.arange(0.50, 0.99, 0.01):
+        y_val_pred = np.where(y_val_prob >= t, 1, 0)
+        f1_clase0 = f1_score(y_val, y_val_pred, pos_label=0, zero_division=0)
+        if f1_clase0 > mejor_f1_clase0:
+            mejor_f1_clase0, mejor_umbral = f1_clase0, t
 
     print(
-        "\n================ MATRIZ DE CONFUSIÓN (UMBRAL OPTIMIZADO) =================="
+        f"Umbral óptimo (validación): {mejor_umbral:.2f} — F1 clase 0: {mejor_f1_clase0:.4f}"
     )
-    print(confusion_matrix(y_test, y_pred))
+
+    # --- Evaluación final, SOLO AHORA, sobre test (nunca antes visto) ---
+    y_test_prob = pipeline.predict_proba(X_test)[:, 1]
+    y_test_pred = np.where(y_test_prob >= mejor_umbral, 1, 0)
+
+    print("\n================ MATRIZ DE CONFUSIÓN (UMBRAL VALIDADO) ==================")
+    print(confusion_matrix(y_test, y_test_pred))
     print("\n================ REPORTE DE CLASIFICACIÓN ================ ")
-    print(classification_report(y_test, y_pred))
-    print(f"Métrica ROC-AUC (Estable y confiable): {roc_auc_score(y_test, y_prob):.4f}")
+    print(classification_report(y_test, y_test_pred))
+    print(
+        f"Métrica ROC-AUC (Estable y confiable): {roc_auc_score(y_test, y_test_prob):.4f}"
+    )
 
     # 9. Serializar el Pipeline completo (Cerebro de la IA + Preprocesamiento)
     base_dir = os.path.dirname(
