@@ -173,9 +173,10 @@ export default function ObservatoryPage() {
                             </div>
 
                             {/* Gráfico 2: Distribución por Derechohabiencia */}
+                            {/* Gráfico 2: Donut Chart con Tooltip Dinámico por Institución */}
                             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
                                 <h3 className="text-lg font-bold text-slate-900 mb-1">Distribución Poblacional por Derechohabiencia</h3>
-                                <p className="text-xs text-slate-500 mb-4">Proporción de pacientes según su afiliación a instituciones sanitarias</p>
+                                <p className="text-xs text-slate-500 mb-4">Proporción (%) según afiliación a instituciones sanitarias</p>
                                 <div className="h-80">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -183,17 +184,24 @@ export default function ObservatoryPage() {
                                                 data={data.por_derechohabiencia}
                                                 dataKey="porcentaje"
                                                 nameKey="institucion"
-                                                cx="50%"
-                                                cy="45%"
-                                                outerRadius={80}
-                                                label={(entry: any) => `${entry.payload?.porcentaje ?? entry.porcentaje}%`}
+                                                cx="45%"
+                                                cy="50%"
+                                                innerRadius={70}
+                                                outerRadius={110}
+                                                paddingAngle={3}
                                             >
                                                 {data.por_derechohabiencia.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLOR_PALETTE[index % COLOR_PALETTE.length]} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip formatter={(val: any) => [`${val}%`, "Proporción Real"]} />
-                                            <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                            <Tooltip formatter={(val: any, name: any) => [`${val}%`, `${name} (Proporción Real)`]} />
+
+                                            <Legend
+                                                layout="vertical"
+                                                align="right"
+                                                verticalAlign="middle"
+                                                wrapperStyle={{ fontSize: '11px', paddingLeft: '10px' }}
+                                            />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
