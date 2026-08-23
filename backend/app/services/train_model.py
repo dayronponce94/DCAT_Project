@@ -257,18 +257,18 @@ def train_and_compare_models():
     run_mcnemar_test(y_test.values, y_pred_test_xgb, y_pred_test_rf)
 
     # =========================================================================
-    # BLOQUE 5: SERIALIZACIÓN DEL MODELO DE PRODUCCIÓN (XGBoost)
+    # BLOQUE 5: SERIALIZACIÓN DEL MODELO DE PRODUCCIÓN (Random Forest)
     # =========================================================================
     base_dir = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     )
-    model_path = os.path.join(base_dir, "app", "models_ml", "xgboost_model.pkl")
+    model_path = os.path.join(base_dir, "app", "models_ml", "random_forest_model.pkl")
 
     with open(model_path, "wb") as f:
-        pickle.dump(xgb_pipeline, f)
+        pickle.dump(rf_pipeline, f)
 
     print(
-        f"\n[ÉXITO] Pipeline XGBoost (Modelo en Producción) guardado en: {model_path}"
+        f"\n[ÉXITO] Pipeline Random Forest (Modelo en Producción) guardado en: {model_path}"
     )
 
 
