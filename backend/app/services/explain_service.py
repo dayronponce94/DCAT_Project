@@ -27,7 +27,9 @@ def _cargar_pipeline():
         base_dir = os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         )
-        model_path = os.path.join(base_dir, "app", "models_ml", "xgboost_model.pkl")
+        model_path = os.path.join(
+            base_dir, "app", "models_ml", "random_forest_model.pkl"
+        )
         if not os.path.exists(model_path):
             raise FileNotFoundError(
                 f"No se encontró el modelo entrenado en: {model_path}"
@@ -121,7 +123,7 @@ def get_shap_explanation(patient_data: dict):
     """
     pipeline = _cargar_pipeline()
     preprocessor = pipeline.named_steps["preprocessor"]
-    xgb_model = pipeline.named_steps["classifier"]
+    rf_model = pipeline.named_steps["classifier"]
 
     df_patient = pd.DataFrame([patient_data])
 
@@ -132,11 +134,19 @@ def get_shap_explanation(patient_data: dict):
     feature_names = preprocessor.get_feature_names_out()
     df_transformed = pd.DataFrame(X_transformed, columns=feature_names)
 
-    # ---------------- SHAP (sin cambios respecto a lo que ya tenías) ----------------
-    explainer_shap = shap.TreeExplainer(xgb_model)
+    # ---------------- SHAP (Compatible con TreeExplainer de Random Forest) ----------------
+    explainer_shap = shap.TreeExplainer(rf_model)
     shap_values = explainer_shap.shap_values(df_transformed)
-    shap_local = shap_values[0][0] if isinstance(shap_values, list) else shap_values[0]
-    shap_local = shap_local * -1  # reencuadrar hacia riesgo de Desamparo
+
+    # Manejo flexible de dimensiones de SHAP para clasificadores de scikit-learn
+    if isinstance(shap_values, list):
+        # shap_values[0] corresponde a la Clase 0 (Desamparo)
+        shap_local = shap_values[0][0]
+    elif len(shap_values.shape) == 3:
+        # Array 3D: (muestras, características, clases)
+        shap_local = shap_values[0, :, 0]
+    else:
+        shap_local = shap_values[0] * -1
 
     explicacion_detallada = []
     fila_transformada = df_transformed.iloc[0]
@@ -165,12 +175,12 @@ def get_shap_explanation(patient_data: dict):
     lime_explainer = _construir_lime_explainer()
     predict_fn = _predict_proba_desde_crudo(
         pipeline
-    )  # pipeline completo: aplica OneHotEncoder + XGBoost
+    )  # pipeline completo: aplica OneHotEncoder + Random Forest
 
     exp = lime_explainer.explain_instance(
         data_row=df_patient.iloc[
             0
-        ].values,  # fila CRUDA del paciente (EDAD, ESTADO_CONYUGAL, ...), sin transformar
+        ].values,  # fila CRUDA del paciente (EDAD, ESTADO_CONYUGAL, ...), sin transformar      ].values,  # fila CRUDA del paciente (EDAD, ESTADO_CONYUGAL, ...), sin transformar
         predict_fn=predict_fn,
         num_features=5,  # solo hay 5 variables originales, así que las pedimos todas
         labels=(0,),  # explicamos la clase 0 = Desamparo directamente
@@ -243,7 +253,7 @@ if __name__ == "__main__":
             f" -> {factor['caracteristica_binaria']}: {factor['impacto_shap']:.4f} ({factor['direccion']})"
         )
 
-    print("\nTop Factores LIME (reales, no simulados):")
+    print("\nTop Factores LIME:")
     for factor in resultado["analisis_lime"][:4]:
         print(
             f" -> {factor['regla_lime']}: {factor['impacto_probabilidad']:.4f} ({factor['efecto']})"
