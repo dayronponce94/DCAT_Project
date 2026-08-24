@@ -6,7 +6,7 @@ export default function MainDashboard() {
   const modules = [
     {
       id: "observatory",
-      title: "Módulo 1: Observatorio Geo-Socioeconómico",
+      title: "Observatorio Geo-Socioeconómico",
       description:
         "Visualización Global de la Tasa de Mortalidad Materna a Nivel Nacional mediante Filtros Interactivos de BI.",
       status: "Operativo (100%)",
@@ -17,11 +17,11 @@ export default function MainDashboard() {
         </svg>
       ),
       href: "/observatory",
-      badge: "BI & Mapas",
+      badge: "Visualización & BI",
     },
     {
       id: "simulator",
-      title: "Módulo 2 y 3: Simulador Predictivo & Auditoría XAI",
+      title: "Simulador Predictivo & Auditoría XAI",
       description:
         "Evaluación individual de vulnerabilidad mediante Random Forest, acompañada de una narrativa clínica axiomática (SHAP) y auditoría local de contraste (LIME).",
       status: "Operativo (80%)",
@@ -36,7 +36,7 @@ export default function MainDashboard() {
     },
     {
       id: "metrics",
-      title: "Módulo Técnico: Evaluación y Desempeño Global",
+      title: "Evaluación y Desempeño Global",
       description:
         "Consola de métricas científicas del modelo Random Forest (ROC-AUC, Matriz de Confusión) y análisis de convergencia metodológica SHAP vs LIME.",
       status: "Operativo (100%)",
@@ -49,21 +49,6 @@ export default function MainDashboard() {
       ),
       href: "/metrics",
       badge: "Validación IA",
-    },
-    {
-      id: "reports",
-      title: "Módulo 4: Generador de Reportes Científicos",
-      description:
-        "Exportador oficial de fichas de auditoría médica y recomendaciones de política pública de precisión en formato PDF.",
-      status: "Pendiente",
-      statusColor: "bg-slate-100 text-slate-700 border-slate-300",
-      icon: (
-        <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      href: "/reports",
-      badge: "Exportador PDF",
     },
   ];
 
@@ -116,7 +101,7 @@ export default function MainDashboard() {
         {/* PARRILLA DE TARJETAS DE MÓDULOS */}
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4">Módulos del Sistema</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {modules.map((mod) => (
               <div
                 key={mod.id}
