@@ -23,9 +23,9 @@ export default function MainDashboard() {
       id: "simulator",
       title: "Módulo 2 y 3: Simulador Predictivo & Auditoría XAI",
       description:
-        "Evaluación individual de vulnerabilidad mediante IA (XGBoost) y explicación local interprete basada en SHAP y LIME en lenguaje natural.",
-      status: "Operativo (100%)",
-      statusColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
+        "Evaluación individual de vulnerabilidad mediante Random Forest, acompañada de una narrativa clínica axiomática (SHAP) y auditoría local de contraste (LIME).",
+      status: "Operativo (80%)",
+      statusColor: "bg-orange-100 text-orange-800 border-orange-300",
       icon: (
         <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -38,7 +38,7 @@ export default function MainDashboard() {
       id: "metrics",
       title: "Módulo Técnico: Evaluación y Desempeño Global",
       description:
-        "Consola de métricas científicas del modelo predictivo (ROC-AUC, Matriz de Confusión) e impacto SHAP global a nivel nacional.",
+        "Consola de métricas científicas del modelo Random Forest (ROC-AUC, Matriz de Confusión) y análisis de convergencia metodológica SHAP vs LIME.",
       status: "Operativo (100%)",
       statusColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
       icon: (
@@ -88,7 +88,7 @@ export default function MainDashboard() {
           </div>
         </header>
 
-        {/* MÁTRICA RÁPIDA / STATUS GENERAL */}
+        {/* MÉTRICA RÁPIDA / STATUS GENERAL */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
             <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600 font-bold text-xl">22K+</div>
@@ -98,17 +98,17 @@ export default function MainDashboard() {
             </div>
           </div>
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 font-bold text-xl">0.7596</div>
+            <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 font-bold text-xl">0.7381</div>
             <div>
               <p className="text-xs text-slate-500 font-medium">Rendimiento ROC-AUC</p>
-              <p className="text-sm font-bold text-slate-900">Modelo XGBoost Calibrado</p>
+              <p className="text-sm font-bold text-slate-900">Random Forest Calibrado</p>
             </div>
           </div>
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
             <div className="p-3 bg-amber-50 rounded-lg text-amber-600 font-bold text-xl">SHAP</div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Motor Explicable</p>
-              <p className="text-sm font-bold text-slate-900">Auditoría Local & Global</p>
+              <p className="text-xs text-slate-500 font-medium">Motor Explicable Principal</p>
+              <p className="text-sm font-bold text-slate-900">Auditoría Axiomática</p>
             </div>
           </div>
         </div>
