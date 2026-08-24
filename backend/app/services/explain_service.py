@@ -204,17 +204,40 @@ def get_shap_explanation(patient_data: dict):
             }
         )
 
-    # ---------------- Narrativa (usa el top factor REAL de LIME, no una regla fija hardcodeada) ----------------
-    factor_critico_lime = analisis_lime[0]["regla_lime"] if analisis_lime else "N/D"
+    # ---------------- Nueva Narrativa Clínica Basada en SHAP (Solidez y Veracidad) ----------------
+    # 1. Separar factores que aumentan de los que disminuyen el riesgo usando SHAP
+    factores_incrementan = [f for f in explicacion_detallada if f["impacto_shap"] > 0]
+    factores_disminuyen = [f for f in explicacion_detallada if f["impacto_shap"] < 0]
 
-    narrativa_clinica = (
-        f"El motor de Inteligencia Artificial predice un riesgo de desamparo del {riesgo_desamparo * 100:.2f}%. "
-        f"Al auditar el caso con LIME, el factor local más determinante fue: '{factor_critico_lime}', "
-        f"con un impacto de {analisis_lime[0]['impacto_probabilidad']*100:.2f} puntos porcentuales sobre la probabilidad "
-        f"de desamparo (si LIME encontró resultados).\n\n"
-        f"Esto es consistente con el análisis SHAP, que identificó a {explicacion_detallada[0]['caracteristica_traducida']} "
-        f"como el principal impulsor del riesgo."
+    # 2. Identificar dinámicamente los factores principales
+    principal_impulsor = (
+        factores_incrementan[0]["caracteristica_traducida"]
+        if factores_incrementan
+        else "Ninguno"
     )
+    principal_protector = (
+        factores_disminuyen[0]["caracteristica_traducida"]
+        if factores_disminuyen
+        else "Ninguno"
+    )
+
+    # 3. Construcción de la narrativa genérica y adaptativa
+    narrativa_clinica = (
+        f"El motor de Inteligencia Artificial predice una probabilidad del {riesgo_desamparo * 100:.2f}% "
+        f"de que el perfil evaluado derive en una situación de desamparo social o institucional, en contraposición "
+        f"a un {prob_atencion * 100:.2f}% de recibir atención médica oportuna.\n\n"
+        f"Tras auditar el modelo mediante atribución local determinista (SHAP), se determinó de forma consistente "
+        f"que la variable con mayor peso clínico para elevar este riesgo es '{principal_impulsor}'. "
+    )
+
+    # 4. Añadir dinámicamente el factor protector si el paciente cuenta con uno
+    if principal_protector != "Ninguno":
+        narrativa_clinica += (
+            f"Por el contrario, el elemento más significativo que actúa como factor de protección o mitigación "
+            f"en este caso particular es '{principal_protector}'."
+        )
+    else:
+        narrativa_clinica += "Para este perfil en particular, no se detectaron factores atenuantes significativos que reduzcan el riesgo."
 
     return {
         "probabilidad_atencion_medica": float(prob_atencion),
