@@ -250,7 +250,7 @@ export default function Home() {
                                     );
                                 })()}
 
-                                {/* CAPA 2: NARRATIVA Y RECOMENDACIÓN CLINICA */}
+                                {/* CAPA 2: NARRATIVA Y RECOMENDACIÓN CLÍNICA (LIME TABULAR) */}
                                 <div className="bg-linear-to-r from-slate-900 to-indigo-950 p-6 rounded-xl shadow-md text-white">
                                     <div className="flex items-center justify-between mb-3">
                                         <h3 className="text-lg font-semibold text-indigo-300">Diagnóstico e Interpretación Clínica</h3>
@@ -260,25 +260,6 @@ export default function Home() {
                                     <p className="text-sm bg-slate-800/60 p-4 rounded-lg border border-slate-700/60 mb-5 leading-relaxed text-slate-200">
                                         {result.narrativa_clinica}
                                     </p>
-
-                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Factores Sociodemográficos Determinantes (% de Impacto Directo):</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {result.analisis_lime?.map((item, idx) => {
-                                            const val = getLimeValue(item);
-                                            const label = getLimeLabel(item);
-                                            const isEdad = label.toLowerCase().includes("edad");
-                                            const displayLabel = isEdad ? `${label} (${formData.EDAD} años)` : label;
-
-                                            return (
-                                                <div key={idx} className="bg-slate-800/40 border border-slate-700/40 p-2.5 rounded-lg flex justify-between items-center text-xs">
-                                                    <span className="text-slate-300 font-medium">{displayLabel}</span>
-                                                    <span className={val > 0 ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}>
-                                                        {val > 0 ? `+${val.toFixed(2)}%` : `${val.toFixed(2)}%`} riesgo
-                                                    </span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
                                 </div>
 
                                 {/* CAPA 3: AUDITORÍA TÉCNICA Y MATEMÁTICA */}
@@ -291,7 +272,7 @@ export default function Home() {
                                             <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                             </svg>
-                                            Auditoría Técnica y Fundamentación Matemática (SHAP Log-Odds)
+                                            Auditoría Técnica y Fundamentación Matemática (SHAP Log-Odds & LIME)
                                         </span>
                                         <span className="text-xs text-indigo-600 font-normal">
                                             {showTechnicalDetails ? "Ocultar panel técnico ▲" : "Desplegar panel técnico ▼"}
@@ -299,7 +280,7 @@ export default function Home() {
                                     </button>
 
                                     {showTechnicalDetails && (
-                                        <div className="p-6 space-y-6 border-t border-slate-200">
+                                        <div className="p-6 space-y-8 border-t border-slate-200">
                                             {/* Gráfico SHAP */}
                                             <div>
                                                 <h4 className="text-sm font-bold text-slate-900 mb-1">Valores de Atribución Local SHAP (Shapley Additive exPlanations)</h4>
@@ -330,7 +311,7 @@ export default function Home() {
                                                             <Bar dataKey="impacto_shap">
                                                                 {result.analisis_explicable_xai.map((entry, index) => (
                                                                     <Cell
-                                                                        key={`cell-${index}`}
+                                                                        key={`cell-shap-${index}`}
                                                                         fill={entry.impacto_shap > 0 ? "#ef4444" : "#10b981"}
                                                                     />
                                                                 ))}
@@ -340,8 +321,65 @@ export default function Home() {
                                                 </div>
                                             </div>
 
+                                            {/* Gráfico LIME */}
+                                            <div className="pt-6 border-t border-slate-100">
+                                                <h4 className="text-sm font-bold text-slate-900 mb-1">Ponderación Local de Importancia LIME (Local Interpretable Model-agnostic Explanations)</h4>
+                                                <p className="text-xs text-slate-500 mb-4">
+                                                    Modelo sustituto lineal ajustado localmente alrededor del perfil evaluado. Expresado en <strong>porcentaje de impacto en riesgo</strong>.
+                                                </p>
+
+                                                <div className="h-60">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart
+                                                            /* 
+                                                              Mapeamos el arreglo de SHAP para asegurar que LIME use exactamente 
+                                                              los mismos nombres de variables ("Escolaridad: NINGUNA") y el mismo orden.
+                                                            */
+                                                            data={result.analisis_explicable_xai.map((shapItem, i) => {
+                                                                const limeMatch = result.analisis_lime?.[i];
+                                                                const val = getLimeValue(limeMatch);
+                                                                const isEdad = shapItem.caracteristica_traducida.toLowerCase().includes("edad");
+
+                                                                return {
+                                                                    label: isEdad ? `Edad: ${formData.EDAD} años` : shapItem.caracteristica_traducida,
+                                                                    impacto_lime: val
+                                                                };
+                                                            })}
+                                                            layout="vertical"
+                                                            margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                                                        >
+                                                            <CartesianGrid strokeDasharray="3 3" />
+                                                            <XAxis type="number" unit="%" />
+                                                            {/* Ahora el YAxis lee la propiedad 'label' que contiene el formato limpio de SHAP */}
+                                                            <YAxis dataKey="label" type="category" width={180} style={{ fontSize: '11px' }} />
+                                                            <Tooltip
+                                                                formatter={(value: any) => [`${Number(value).toFixed(2)}%`, "Impacto LIME"]}
+                                                            />
+                                                            <ReferenceLine x={0} stroke="#64748b" />
+                                                            <Bar dataKey="impacto_lime">
+                                                                {/* 
+                      Pintamos las celdas recorriendo el arreglo de SHAP 
+                      para mantener sincronía total con la propiedad 'data' del gráfico
+                    */}
+                                                                {result.analisis_explicable_xai.map((_, index) => {
+                                                                    const limeMatch = result.analisis_lime?.[index];
+                                                                    const val = getLimeValue(limeMatch);
+                                                                    return (
+                                                                        <Cell
+                                                                            key={`cell-lime-${index}`}
+                                                                            fill={val > 0 ? "#ef4444" : "#10b981"}
+                                                                        />
+                                                                    );
+                                                                })}
+                                                            </Bar>
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            </div>
+
+
                                             {/* Tabla Comparativa SHAP vs LIME */}
-                                            <div className="pt-4 border-t border-slate-100">
+                                            <div className="pt-6 border-t border-slate-100">
                                                 <h4 className="text-sm font-bold text-slate-900 mb-2">Convergencia Inter-metodológica (SHAP vs. LIME)</h4>
                                                 <div className="overflow-x-auto">
                                                     <table className="w-full text-xs text-left border-collapse">
@@ -349,8 +387,9 @@ export default function Home() {
                                                             <tr className="bg-slate-50 text-slate-700 border-b border-slate-200">
                                                                 <th className="p-2 font-semibold">Variable</th>
                                                                 <th className="p-2 font-semibold">SHAP (Log-Odds)</th>
-                                                                <th className="p-2 font-semibold">LIME (% Riesgo)</th>
                                                                 <th className="p-2 font-semibold">Efecto en Riesgo (SHAP)</th>
+                                                                <th className="p-2 font-semibold">LIME (% Riesgo)</th>
+                                                                <th className="p-2 font-semibold">Efecto en Riesgo (LIME)</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -362,15 +401,35 @@ export default function Home() {
 
                                                                 return (
                                                                     <tr key={i} className="border-b border-slate-100 hover:bg-slate-50/50">
+                                                                        {/* 1. Variable */}
                                                                         <td className="p-2 font-medium text-slate-800">{nombreVariable}</td>
+
+                                                                        {/* 2. SHAP (Log-Odds) */}
                                                                         <td className="p-2 font-mono text-slate-600">{shapItem.impacto_shap.toFixed(4)}</td>
-                                                                        <td className="p-2 font-mono text-slate-600">
-                                                                            {limeMatch ? `${limeVal > 0 ? '+' : ''}${limeVal.toFixed(2)}%` : 'N/A'}
-                                                                        </td>
+
+                                                                        {/* 3. Efecto en Riesgo (SHAP) */}
                                                                         <td className="p-2">
                                                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${shapItem.impacto_shap > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                                                                 {shapItem.impacto_shap > 0 ? 'Aumenta Desamparo' : 'Disminuye Desamparo'}
                                                                             </span>
+                                                                        </td>
+
+                                                                        {/* 4. LIME (% Riesgo) */}
+                                                                        <td className="p-2 font-mono text-slate-600">
+                                                                            {limeMatch ? `${limeVal > 0 ? '+' : ''}${limeVal.toFixed(2)}%` : 'N/A'}
+                                                                        </td>
+
+                                                                        {/* 5. Efecto en Riesgo (LIME) */}
+                                                                        <td className="p-2">
+                                                                            {limeMatch ? (
+                                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${limeVal > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                                                    {limeVal > 0 ? 'Aumenta Desamparo' : 'Disminuye Desamparo'}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-400">
+                                                                                    Sin Datos
+                                                                                </span>
+                                                                            )}
                                                                         </td>
                                                                     </tr>
                                                                 );
