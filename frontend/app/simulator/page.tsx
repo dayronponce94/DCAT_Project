@@ -325,32 +325,60 @@ export default function Home() {
                                                 <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-2">
                                                     Protocolo Clínico Prioritario
                                                 </h4>
-                                                <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4">
-                                                    {generarRecomendaciones(result.probabilidad_riesgo_desamparo, result.analisis_explicable_xai)
-                                                        .filter(r => r.nivel === 'CLINICO')
-                                                        .map((rec, idx) => (
-                                                            <li key={idx}>
-                                                                <strong className="text-slate-800">{rec.titulo}:</strong> {rec.descripcion}
-                                                            </li>
-                                                        ))}
-                                                </ul>
+
+                                                {/* 1. Obtenemos y filtramos la lista de recomendaciones */}
+                                                {(() => {
+                                                    const recsClinicas = generarRecomendaciones(result.probabilidad_riesgo_desamparo, result.analisis_explicable_xai)
+                                                        .filter(r => r.nivel === 'CLINICO');
+
+                                                    {/* 2. Aplicamos la condición por longitud */ }
+                                                    return recsClinicas.length > 0 ? (
+                                                        <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4">
+                                                            {recsClinicas.map((rec, idx) => (
+                                                                <li key={idx}>
+                                                                    <strong className="text-slate-800">{rec.titulo}:</strong> {rec.descripcion}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        /* Mensaje alternativo si el arreglo viene vacío */
+                                                        <p className="text-xs text-slate-400 italic pl-1">
+                                                            Sin recomendaciones clínicas adicionales para este perfil.
+                                                        </p>
+                                                    );
+                                                })()}
                                             </div>
+
 
                                             {/* Política Pública */}
                                             <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                                                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-2">
-                                                    Líneas de Política Pública y Protección Social
+                                                    Política Pública y Protección Social
                                                 </h4>
-                                                <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4">
-                                                    {generarRecomendaciones(result.probabilidad_riesgo_desamparo, result.analisis_explicable_xai)
-                                                        .filter(r => r.nivel === 'POLITICA_PUBLICA')
-                                                        .map((rec, idx) => (
-                                                            <li key={idx}>
-                                                                <strong className="text-slate-800">{rec.titulo}:</strong> {rec.descripcion}
-                                                            </li>
-                                                        ))}
-                                                </ul>
+
+                                                {/* 1. Obtenemos y filtramos la lista para políticas públicas */}
+                                                {(() => {
+                                                    const recsPoliticas = generarRecomendaciones(result.probabilidad_riesgo_desamparo, result.analisis_explicable_xai)
+                                                        .filter(r => r.nivel === 'POLITICA_PUBLICA');
+
+                                                    {/* 2. Evaluamos la longitud del arreglo */ }
+                                                    return recsPoliticas.length > 0 ? (
+                                                        <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4">
+                                                            {recsPoliticas.map((rec, idx) => (
+                                                                <li key={idx}>
+                                                                    <strong className="text-slate-800">{rec.titulo}:</strong> {rec.descripcion}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        /* Texto de escape idéntico al solicitado en formato web */
+                                                        <p className="text-xs text-slate-400 italic pl-1">
+                                                            Sin recomendaciones de política pública adicionales.
+                                                        </p>
+                                                    );
+                                                })()}
                                             </div>
+
                                         </div>
                                     </div>
                                 )}

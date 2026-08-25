@@ -175,6 +175,11 @@ const styles = StyleSheet.create({
         color: '#334155',
         leading: 1.4
     },
+    colVarNombre: { width: '35%' },
+    colValorObs: { width: '25%' },
+    colShapVal: { width: '15%', textAlign: 'center' },
+    colShapEffect: { width: '20%', textAlign: 'center' },
+
     footer: {
         position: 'absolute',
         bottom: 12,
@@ -205,7 +210,33 @@ const getPdfRiskBadge = (prob: number) => {
     return { text: "Riesgo Bajo de Desamparo", bg: "#D1FAE5", border: "#6EE7B7", textCol: "#065F46" };
 };
 
-export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recomendaciones }) => {
+const obtenerValorObservado = (shapItem: any, datosPaciente: any) => {
+    const texto: string = shapItem.caracteristica_traducida || shapItem.caracteristica_binaria || '';
+
+    // Si contiene ":", el backend envió "NombreVariable: Valor"
+    if (texto.includes(':')) {
+        const partes = texto.split(':');
+        return {
+            nombreLimpio: partes[0].trim(),
+            valorObservado: partes[1].trim()
+        };
+    }
+
+    // Manejo de caso especial: Edad
+    if (texto.toLowerCase().includes('edad')) {
+        return {
+            nombreLimpio: 'Edad',
+            valorObservado: `${datosPaciente?.EDAD || datosPaciente?.edad || 18} años`
+        };
+    }
+
+    return {
+        nombreLimpio: texto,
+        valorObservado: 'Registrado'
+    };
+};
+
+export const PDFReportDocument: React.FC<Props> = ({ datosPaciente, resultadoPredictivo, recomendaciones }) => {
     const recsClinicas = recomendaciones.filter(r => r.nivel === 'CLINICO');
     const recsPolitica = recomendaciones.filter(r => r.nivel === 'POLITICA_PUBLICA');
     const probDecimal = resultadoPredictivo?.probabilidad_riesgo_desamparo ?? 0;
@@ -243,34 +274,51 @@ export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recome
                         </Text>
                     </View>
 
-                    <Text style={styles.sectionTitle}>2. Diagnóstico e Interpretación Clínica</Text>
+                    {/* 1. Diagnóstico e Interpretación Clínica */}
+                    <Text style={styles.sectionTitle}>1. Diagnóstico e Interpretación Clínica</Text>
                     <View style={styles.narrativeBox}>
                         <Text style={styles.narrativeText}>
                             {resultadoPredictivo?.narrativa_clinica || "No hay narrativa clínica disponible para este expediente."}
                         </Text>
                     </View>
 
-                    {/* Desglose Técnico SHAP y LIME */}
-                    <Text style={styles.sectionTitle}>2. Análisis de Explicabilidad Local (SHAP & LIME)</Text>
+                    {/* 2. Análisis de Explicabilidad Local (SHAP) */}
+                    <Text style={styles.sectionTitle}>2. Análisis de Explicabilidad Local (SHAP)</Text>
                     <View style={styles.table}>
+                        {/* Encabezados de la Tabla */}
                         <View style={styles.tableHeader}>
-                            <Text style={[styles.thText, styles.colVar]}>Variable Observada</Text>
-                            <Text style={[styles.thText, styles.colShap]}>Impacto SHAP</Text>
-                            <Text style={[styles.thText, styles.colLime]}>Efecto en Riesgo (LIME)</Text>
+                            <Text style={[styles.thText, styles.colVarNombre]}>Variable</Text>
+                            <Text style={[styles.thText, styles.colValorObs]}>Valor Observado</Text>
+                            <Text style={[styles.thText, styles.colShapVal]}>SHAP (Log-Odds)</Text>
+                            <Text style={[styles.thText, styles.colShapEffect]}>Efecto (SHAP)</Text>
                         </View>
-                        {resultadoPredictivo?.analisis_explicable_xai?.map((item: any, idx: number) => {
-                            const limeVal = resultadoPredictivo?.analisis_lime?.[idx]?.impacto_probabilidad ?? 0;
+
+                        {/* Filas Dinámicas */}
+                        {resultadoPredictivo?.analisis_explicable_xai?.map((shapItem: any, idx: number) => {
+                            const { nombreLimpio, valorObservado } = obtenerValorObservado(shapItem, datosPaciente);
+                            const shapAumenta = shapItem.impacto_shap > 0;
+
                             return (
                                 <View key={idx} style={styles.tableRow}>
-                                    <Text style={[styles.tdText, styles.colVar]}>
-                                        {item.caracteristica_traducida || item.caracteristica_binaria}
+                                    {/* 1. Variable (Limpia, ej: "Derechohabiencia") */}
+                                    <Text style={[styles.tdText, styles.colVarNombre]}>
+                                        {nombreLimpio}
                                     </Text>
-                                    <Text style={[styles.tdText, styles.colShap]}>
-                                        {item.impacto_shap > 0 ? `+${item.impacto_shap.toFixed(3)}` : item.impacto_shap.toFixed(3)}
+
+                                    {/* 2. Valor Observado (ej: "IMSS / ISSSTE" o "18 años") */}
+                                    <Text style={[styles.tdText, styles.colValorObs]}>
+                                        {valorObservado}
                                     </Text>
-                                    <View style={styles.colLime}>
-                                        <Text style={limeVal > 0 ? styles.badgeRed : styles.badgeGreen}>
-                                            {limeVal > 0 ? 'Aumenta Riesgo' : 'Disminuye Riesgo'}
+
+                                    {/* 3. SHAP Valor */}
+                                    <Text style={[styles.tdText, styles.colShapVal]}>
+                                        {shapAumenta ? `+${shapItem.impacto_shap.toFixed(4)}` : shapItem.impacto_shap.toFixed(4)}
+                                    </Text>
+
+                                    {/* 4. SHAP Efecto Badge */}
+                                    <View style={styles.colShapEffect}>
+                                        <Text style={shapAumenta ? styles.badgeRed : styles.badgeGreen}>
+                                            {shapAumenta ? 'Aumenta Desamparo' : 'Disminuye Desamparo'}
                                         </Text>
                                     </View>
                                 </View>
@@ -278,8 +326,8 @@ export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recome
                         })}
                     </View>
 
-                    {/* Recomendaciones de Precisión */}
-                    <Text style={styles.sectionTitle}>2. Recomendaciones de Precisión e Intervención</Text>
+                    {/* 3. Recomendaciones de Precisión e Intervención */}
+                    <Text style={styles.sectionTitle}>3. Recomendaciones de Precisión e Intervención</Text>
                     <View style={styles.twoColumns}>
                         {/* Protocolo Clínico */}
                         <View style={styles.column}>
