@@ -162,6 +162,19 @@ const styles = StyleSheet.create({
         color: '#334155',
         leading: 1.3
     },
+    narrativeBox: {
+        backgroundColor: '#F8FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 12
+    },
+    narrativeText: {
+        fontSize: 8,
+        color: '#334155',
+        leading: 1.4
+    },
     footer: {
         position: 'absolute',
         bottom: 12,
@@ -208,8 +221,15 @@ export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recome
                         </Text>
                     </View>
 
+                    <Text style={styles.sectionTitle}>2. Diagnóstico e Interpretación Clínica</Text>
+                    <View style={styles.narrativeBox}>
+                        <Text style={styles.narrativeText}>
+                            {resultadoPredictivo?.narrativa_clinica || "No hay narrativa clínica disponible para este expediente."}
+                        </Text>
+                    </View>
+
                     {/* Desglose Técnico SHAP y LIME */}
-                    <Text style={styles.sectionTitle}>1. Análisis de Explicabilidad Local (SHAP & LIME)</Text>
+                    <Text style={styles.sectionTitle}>2. Análisis de Explicabilidad Local (SHAP & LIME)</Text>
                     <View style={styles.table}>
                         <View style={styles.tableHeader}>
                             <Text style={[styles.thText, styles.colVar]}>Variable Observada</Text>
