@@ -195,10 +195,22 @@ interface Props {
     recomendaciones: Recomendacion[];
 }
 
+const getPdfRiskBadge = (prob: number) => {
+    if (prob >= 0.5) {
+        return { text: "Riesgo Alto de Desamparo", bg: "#FEE2E2", border: "#FCA5A5", textCol: "#991B1B" };
+    }
+    if (prob >= 0.2) {
+        return { text: "Riesgo Moderado de Desamparo", bg: "#FEF3C7", border: "#FDE047", textCol: "#92400E" };
+    }
+    return { text: "Riesgo Bajo de Desamparo", bg: "#D1FAE5", border: "#6EE7B7", textCol: "#065F46" };
+};
+
 export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recomendaciones }) => {
-    const probRiesgo = (resultadoPredictivo?.probabilidad_riesgo_desamparo * 100) || 0;
     const recsClinicas = recomendaciones.filter(r => r.nivel === 'CLINICO');
     const recsPolitica = recomendaciones.filter(r => r.nivel === 'POLITICA_PUBLICA');
+    const probDecimal = resultadoPredictivo?.probabilidad_riesgo_desamparo ?? 0;
+    const probRiesgo = probDecimal * 100;
+    const riskBadge = getPdfRiskBadge(probDecimal);
 
     return (
         <Document>
@@ -213,11 +225,21 @@ export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recome
 
                 <View style={styles.bodyContainer}>
                     {/* Tarjeta de Riesgo */}
-                    <View style={styles.metricCard}>
-                        <Text style={styles.metricTitle}>Probabilidad Estimada de Desamparo (Random Forest)</Text>
-                        <Text style={styles.metricValue}>{probRiesgo.toFixed(1)}%</Text>
-                        <Text style={styles.metricSubtitle}>
-                            Nivel de Riesgo: {probRiesgo >= 60 ? 'ALTO — Requiere Atención Prioritaria' : 'MODERADO / BAJO'}
+                    <View style={[
+                        styles.metricCard,
+                        {
+                            backgroundColor: riskBadge.bg,
+                            borderColor: riskBadge.border
+                        }
+                    ]}>
+                        <Text style={[styles.metricTitle, { color: riskBadge.textCol }]}>
+                            Probabilidad Estimada de Desamparo (Random Forest)
+                        </Text>
+                        <Text style={[styles.metricValue, { color: riskBadge.textCol }]}>
+                            {probRiesgo.toFixed(1)}%
+                        </Text>
+                        <Text style={[styles.metricSubtitle, { color: riskBadge.textCol }]}>
+                            Nivel de Riesgo: {riskBadge.text}
                         </Text>
                     </View>
 
