@@ -1,100 +1,286 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Recomendacion } from "@/app/lib/recommendations";
 
 const styles = StyleSheet.create({
-    page: { padding: 35, backgroundColor: '#FFFFFF', fontSize: 10, fontFamily: 'Helvetica' },
-    header: { borderBottomWidth: 1, borderBottomColor: '#CBD5E1', pb: 10, mb: 15 },
-    title: { fontSize: 18, fontWeight: 'bold', color: '#0F172A' },
-    subtitle: { fontSize: 10, color: '#64748B', marginTop: 3 },
-    badge: { backgroundColor: '#EEF2FF', color: '#3730A3', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontSize: 8, width: 140, marginBottom: 5 },
-    section: { marginBottom: 15 },
-    sectionTitle: { fontSize: 12, fontWeight: 'bold', color: '#1E293B', mb: 6, borderBottomWidth: 0.5, borderBottomColor: '#E2E8F0', pb: 3 },
-    text: { fontSize: 9, color: '#334155', leading: 1.4 },
-    table: { width: '100%', borderStyle: 'solid', borderWidth: 0.5, borderColor: '#CBD5E1', marginTop: 6 },
-    tableRow: { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: '#E2E8F0', minHeight: 20, alignItems: 'center' },
-    tableHeader: { backgroundColor: '#F8FAFC', fontWeight: 'bold' },
-    colVariable: { width: '45%', paddingLeft: 6 },
-    colShap: { width: '25%', textAnchor: 'middle', textAlign: 'center' },
-    colLime: { width: '30%', textAnchor: 'middle', textAlign: 'center' },
-    recBox: { backgroundColor: '#F1F5F9', padding: 8, borderRadius: 4, mb: 6 },
-    recTitle: { fontSize: 9, fontWeight: 'bold', color: '#0F172A' },
-    footer: { position: 'absolute', bottom: 20, left: 35, right: 35, textAlign: 'center', fontSize: 8, color: '#94A3B8', borderTopWidth: 0.5, borderTopColor: '#E2E8F0', pt: 5 }
+    page: {
+        paddingTop: 0,
+        paddingBottom: 30,
+        paddingHorizontal: 0,
+        backgroundColor: '#FFFFFF',
+        fontSize: 9,
+        fontFamily: 'Helvetica'
+    },
+    headerContainer: {
+        backgroundColor: '#1E1B4B',
+        paddingVertical: 18,
+        paddingHorizontal: 25,
+        marginBottom: 15
+    },
+    headerTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        letterSpacing: -0.3
+    },
+    headerSubtitle: {
+        fontSize: 8,
+        color: '#C7D2FE',
+        marginTop: 3
+    },
+    bodyContainer: {
+        paddingHorizontal: 25
+    },
+    metricCard: {
+        backgroundColor: '#FEF2F2',
+        borderWidth: 1,
+        borderColor: '#FECACA',
+        borderRadius: 6,
+        padding: 10,
+        textAlign: 'center',
+        marginBottom: 14
+    },
+    metricTitle: {
+        fontSize: 8,
+        fontWeight: 'bold',
+        color: '#991B1B',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5
+    },
+    metricValue: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#DC2626',
+        marginVertical: 2
+    },
+    metricSubtitle: {
+        fontSize: 8,
+        color: '#7F1D1D'
+    },
+    sectionTitle: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#1E1B4B',
+        borderLeftWidth: 3,
+        borderLeftColor: '#4F46E5',
+        paddingLeft: 6,
+        marginTop: 10,
+        marginBottom: 8
+    },
+    table: {
+        width: '100%',
+        borderWidth: 0.5,
+        borderColor: '#CBD5E1',
+        borderRadius: 4,
+        marginBottom: 10
+    },
+    tableHeader: {
+        flexDirection: 'row',
+        backgroundColor: '#F1F5F9',
+        borderBottomWidth: 1,
+        borderBottomColor: '#CBD5E1',
+        paddingVertical: 5,
+        paddingHorizontal: 6
+    },
+    tableRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 0.5,
+        borderBottomColor: '#E2E8F0',
+        paddingVertical: 5,
+        paddingHorizontal: 6,
+        alignItems: 'center'
+    },
+    thText: {
+        fontWeight: 'bold',
+        color: '#334155',
+        fontSize: 8
+    },
+    tdText: {
+        color: '#334155',
+        fontSize: 8
+    },
+    colVar: { width: '45%' },
+    colShap: { width: '25%', textAlign: 'center' },
+    colLime: { width: '30%', textAlign: 'center' },
+    badgeRed: {
+        backgroundColor: '#FEE2E2',
+        color: '#991B1B',
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        borderRadius: 3,
+        fontSize: 7,
+        fontWeight: 'bold'
+    },
+    badgeGreen: {
+        backgroundColor: '#D1FAE5',
+        color: '#065F46',
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        borderRadius: 3,
+        fontSize: 7,
+        fontWeight: 'bold'
+    },
+    twoColumns: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 10
+    },
+    column: {
+        flex: 1,
+        backgroundColor: '#F8FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 5,
+        padding: 8
+    },
+    colTitleClinico: {
+        fontSize: 8.5,
+        fontWeight: 'bold',
+        color: '#4338CA',
+        marginBottom: 6,
+        textTransform: 'uppercase'
+    },
+    colTitlePolitica: {
+        fontSize: 8.5,
+        fontWeight: 'bold',
+        color: '#047857',
+        marginBottom: 6,
+        textTransform: 'uppercase'
+    },
+    listItem: {
+        flexDirection: 'row',
+        marginBottom: 4
+    },
+    bullet: {
+        width: 8,
+        fontSize: 8,
+        color: '#64748B'
+    },
+    listText: {
+        flex: 1,
+        fontSize: 7.5,
+        color: '#334155',
+        leading: 1.3
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 12,
+        left: 25,
+        right: 25,
+        textAlign: 'center',
+        fontSize: 7,
+        color: '#94A3B8',
+        borderTopWidth: 0.5,
+        borderTopColor: '#E2E8F0',
+        paddingTop: 6
+    }
 });
 
 interface Props {
-    datosPaciente: any;
+    datosPaciente?: any;
     resultadoPredictivo: any;
     recomendaciones: Recomendacion[];
 }
 
-export const PDFReportDocument: React.FC<Props> = ({ datosPaciente, resultadoPredictivo, recomendaciones }) => (
-    <Document>
-        <Page size="LETTER" style={styles.page}>
-            {/* Encabezado */}
-            <View style={styles.header}>
-                <Text style={styles.badge}>PROYECTO DOCTORAL DCAT - UAA</Text>
-                <Text style={styles.title}>Ficha de Auditoría Médica y Explicabilidad XAI</Text>
-                <Text style={styles.subtitle}>
-                    Sistema DSS de Evaluación del Riesgo de Desamparo Institucional en Salud Pública
-                </Text>
-            </View>
+export const PDFReportDocument: React.FC<Props> = ({ resultadoPredictivo, recomendaciones }) => {
+    const probRiesgo = (resultadoPredictivo?.probabilidad_riesgo_desamparo * 100) || 0;
+    const recsClinicas = recomendaciones.filter(r => r.nivel === 'CLINICO');
+    const recsPolitica = recomendaciones.filter(r => r.nivel === 'POLITICA_PUBLICA');
 
-            {/* Resumen Epidemiológico */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>1. Diagnóstico del Modelo Predictivo (Random Forest)</Text>
-                <Text style={styles.text}>
-                    Probabilidad Estimada de Desamparo Institucional: {(resultadoPredictivo.probabilidad_riesgo_desamparo * 100).toFixed(2)}%
-                </Text>
-                <Text style={styles.text}>
-                    Probabilidad de Atención Médica Efectiva: {(resultadoPredictivo.probabilidad_atencion_medica * 100).toFixed(2)}%
-                </Text>
-            </View>
-
-            {/* Narrativa Clínica */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>2. Interpretación Axiomática SHAP</Text>
-                <Text style={styles.text}>{resultadoPredictivo.narrativa_clinica}</Text>
-            </View>
-
-            {/* Tabla Comparativa XAI */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>3. Desglose Técnico de Atribución Local</Text>
-                <View style={styles.table}>
-                    <View style={[styles.tableRow, styles.tableHeader]}>
-                        <Text style={styles.colVariable}>Variable Sociodemográfica</Text>
-                        <Text style={styles.colShap}>SHAP (Log-Odds)</Text>
-                        <Text style={styles.colLime}>LIME (Impacto %)</Text>
-                    </View>
-                    {resultadoPredictivo.analisis_explicable_xai?.map((item: any, idx: number) => (
-                        <View key={idx} style={styles.tableRow}>
-                            <Text style={styles.colVariable}>{item.caracteristica_traducida}</Text>
-                            <Text style={styles.colShap}>{item.impacto_shap.toFixed(4)}</Text>
-                            <Text style={styles.colLime}>
-                                {resultadoPredictivo.analisis_lime?.[idx]
-                                    ? `${(resultadoPredictivo.analisis_lime[idx].impacto_probabilidad * 100).toFixed(2)}%`
-                                    : 'N/D'}
-                            </Text>
-                        </View>
-                    ))}
+    return (
+        <Document>
+            <Page size="LETTER" style={styles.page}>
+                {/* Encabezado Principal */}
+                <View style={styles.headerContainer}>
+                    <Text style={styles.headerTitle}>Ficha Oficial de Evaluación de Riesgo y Explicabilidad (XAI)</Text>
+                    <Text style={styles.headerSubtitle}>
+                        Sistema Predictivo DSS de Apoyo a la Decisión Clínica y de Política Pública
+                    </Text>
                 </View>
-            </View>
 
-            {/* Recomendaciones de Precisión */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>4. Plan de Recomendaciones Médicas y de Política Pública</Text>
-                {recomendaciones.map((rec, i) => (
-                    <View key={i} style={styles.recBox}>
-                        <Text style={styles.recTitle}>[{rec.nivel}] {rec.titulo} (Prioridad: {rec.prioridad})</Text>
-                        <Text style={styles.text}>{rec.descripcion}</Text>
+                <View style={styles.bodyContainer}>
+                    {/* Tarjeta de Riesgo */}
+                    <View style={styles.metricCard}>
+                        <Text style={styles.metricTitle}>Probabilidad Estimada de Desamparo (Random Forest)</Text>
+                        <Text style={styles.metricValue}>{probRiesgo.toFixed(1)}%</Text>
+                        <Text style={styles.metricSubtitle}>
+                            Nivel de Riesgo: {probRiesgo >= 60 ? 'ALTO — Requiere Atención Prioritaria' : 'MODERADO / BAJO'}
+                        </Text>
                     </View>
-                ))}
-            </View>
 
-            {/* Pie de Página */}
-            <Text style={styles.footer}>
-                Documento generado automáticamente por la Plataforma DSS-XAI. Válido como instrumento de auditoría científica y apoyo a la toma de decisiones asistenciales.
-            </Text>
-        </Page>
-    </Document>
-);
+                    {/* Desglose Técnico SHAP y LIME */}
+                    <Text style={styles.sectionTitle}>1. Análisis de Explicabilidad Local (SHAP & LIME)</Text>
+                    <View style={styles.table}>
+                        <View style={styles.tableHeader}>
+                            <Text style={[styles.thText, styles.colVar]}>Variable Observada</Text>
+                            <Text style={[styles.thText, styles.colShap]}>Impacto SHAP</Text>
+                            <Text style={[styles.thText, styles.colLime]}>Efecto en Riesgo (LIME)</Text>
+                        </View>
+                        {resultadoPredictivo?.analisis_explicable_xai?.map((item: any, idx: number) => {
+                            const limeVal = resultadoPredictivo?.analisis_lime?.[idx]?.impacto_probabilidad ?? 0;
+                            return (
+                                <View key={idx} style={styles.tableRow}>
+                                    <Text style={[styles.tdText, styles.colVar]}>
+                                        {item.caracteristica_traducida || item.caracteristica_binaria}
+                                    </Text>
+                                    <Text style={[styles.tdText, styles.colShap]}>
+                                        {item.impacto_shap > 0 ? `+${item.impacto_shap.toFixed(3)}` : item.impacto_shap.toFixed(3)}
+                                    </Text>
+                                    <View style={styles.colLime}>
+                                        <Text style={limeVal > 0 ? styles.badgeRed : styles.badgeGreen}>
+                                            {limeVal > 0 ? 'Aumenta Riesgo' : 'Disminuye Riesgo'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+
+                    {/* Recomendaciones de Precisión */}
+                    <Text style={styles.sectionTitle}>2. Recomendaciones de Precisión e Intervención</Text>
+                    <View style={styles.twoColumns}>
+                        {/* Protocolo Clínico */}
+                        <View style={styles.column}>
+                            <Text style={styles.colTitleClinico}>Protocolo Clínico Prioritario</Text>
+                            {recsClinicas.length > 0 ? (
+                                recsClinicas.map((rec, i) => (
+                                    <View key={i} style={styles.listItem}>
+                                        <Text style={styles.bullet}>•</Text>
+                                        <Text style={styles.listText}>
+                                            <Text style={{ fontWeight: 'bold' }}>{rec.titulo}: </Text>
+                                            {rec.descripcion}
+                                        </Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <Text style={styles.listText}>Sin recomendaciones clínicas adicionales.</Text>
+                            )}
+                        </View>
+
+                        {/* Política Pública */}
+                        <View style={styles.column}>
+                            <Text style={styles.colTitlePolitica}>Política Pública y Protección Social</Text>
+                            {recsPolitica.length > 0 ? (
+                                recsPolitica.map((rec, i) => (
+                                    <View key={i} style={styles.listItem}>
+                                        <Text style={styles.bullet}>•</Text>
+                                        <Text style={styles.listText}>
+                                            <Text style={{ fontWeight: 'bold' }}>{rec.titulo}: </Text>
+                                            {rec.descripcion}
+                                        </Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <Text style={styles.listText}>Sin recomendaciones de política pública adicionales.</Text>
+                            )}
+                        </View>
+                    </View>
+                </View>
+
+                <Text style={styles.footer}>
+                    Ficha generada automáticamente por el Sistema DSS-XAI • Documento confidencial de uso clínico e institucional.
+                </Text>
+            </Page>
+        </Document>
+    );
+};

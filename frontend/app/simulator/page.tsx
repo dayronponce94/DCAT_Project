@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Cell } from "recharts";
 import Link from "next/link";
+import { pdf } from '@react-pdf/renderer';
+import { generarRecomendaciones } from '@/app/lib/recommendations';
+import { PDFReportDocument } from '@/app/reports/PDFDocument';
+
 
 interface FactorSHAP {
     caracteristica_binaria: string;
@@ -79,6 +83,49 @@ export default function Home() {
     const getLimeLabel = (item?: FactorLIME): string => {
         if (!item) return "N/A";
         return item.regla_lime;
+    };
+
+    const handleExportPDF = async () => {
+        // 1. Validar que exista un resultado de la API
+        if (!result) return;
+
+        // 2. Mapear los factores SHAP desde el estado `result`
+        const factoresShap = result.analisis_explicable_xai.map((item) => ({
+            caracteristica_traducida: item.caracteristica_traducida,
+            caracteristica_binaria: item.caracteristica_binaria,
+            impacto_shap: item.impacto_shap,
+        }));
+
+        // 3. Generar las recomendaciones dinámicas según el riesgo y SHAP
+        const recomendaciones = generarRecomendaciones(
+            result.probabilidad_riesgo_desamparo,
+            factoresShap
+        );
+
+        // 4. Adaptar el objeto de datos para la plantilla del PDF
+        const resultadoPredictivoAdaptado = {
+            probabilidad_riesgo_desamparo: result.probabilidad_riesgo_desamparo,
+            probabilidad_atencion_medica: result.probabilidad_atencion_medica,
+            analisis_explicable_xai: result.analisis_explicable_xai,
+            analisis_lime: result.analisis_lime,
+            narrativa_clinica: result.narrativa_clinica,
+        };
+
+        // 5. Renderizar y descargar el PDF de forma directa
+        const blob = await pdf(
+            <PDFReportDocument
+                datosPaciente={formData}
+                resultadoPredictivo={resultadoPredictivoAdaptado}
+                recomendaciones={recomendaciones}
+            />
+        ).toBlob();
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Ficha_Oficial_Riesgo_${Date.now()}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -261,6 +308,52 @@ export default function Home() {
                                         {result.narrativa_clinica}
                                     </p>
                                 </div>
+
+                                {/* Sección de Recomendaciones de Precisión */}
+                                {result && (
+                                    <div className="mt-6 bg-slate-50 border border-slate-200 rounded-xl p-6">
+                                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Recomendaciones de Precisión e Intervención
+                                        </h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                            {/* Protocolo Clínico */}
+                                            <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-2">
+                                                    Protocolo Clínico Prioritario
+                                                </h4>
+                                                <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4">
+                                                    {generarRecomendaciones(result.probabilidad_riesgo_desamparo, result.analisis_explicable_xai)
+                                                        .filter(r => r.nivel === 'CLINICO')
+                                                        .map((rec, idx) => (
+                                                            <li key={idx}>
+                                                                <strong className="text-slate-800">{rec.titulo}:</strong> {rec.descripcion}
+                                                            </li>
+                                                        ))}
+                                                </ul>
+                                            </div>
+
+                                            {/* Política Pública */}
+                                            <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-2">
+                                                    Líneas de Política Pública y Protección Social
+                                                </h4>
+                                                <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4">
+                                                    {generarRecomendaciones(result.probabilidad_riesgo_desamparo, result.analisis_explicable_xai)
+                                                        .filter(r => r.nivel === 'POLITICA_PUBLICA')
+                                                        .map((rec, idx) => (
+                                                            <li key={idx}>
+                                                                <strong className="text-slate-800">{rec.titulo}:</strong> {rec.descripcion}
+                                                            </li>
+                                                        ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* CAPA 3: AUDITORÍA TÉCNICA Y MATEMÁTICA */}
                                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -446,6 +539,22 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+
+            {/* Botón Destacado de Exportación */}
+            {/* Cambiamos justify-end por justify-center y agregamos mt-6 para despegarlo */}
+            <div className="flex justify-end mt-6">
+                <button
+                    type="button"
+                    onClick={handleExportPDF}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-md transition-all cursor-pointer"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Exportar Ficha Oficial en PDF
+                </button>
+            </div>
+
         </main>
     );
 }
